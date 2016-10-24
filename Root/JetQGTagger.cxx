@@ -64,6 +64,13 @@ namespace CP {
       InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_TIDE]
     };
     m_jetTrackFilterTool->applySystematicVariation(systSetJet);
+
+    if (!addAffectingSystematic(QGntrackSyst::trackfakes,true) || 
+	!addAffectingSystematic(QGntrackSyst::trackefficiency,true)) {
+      ATH_MSG_ERROR("failed to set up JetQGTagger systematics");
+      return StatusCode::FAILURE;
+    }
+
     
     return StatusCode::SUCCESS;
   }
@@ -109,14 +116,14 @@ namespace CP {
     for (size_t i = 0; i < jettracks.size(); i++) {
       
       const xAOD::TrackParticle* trk = static_cast<const xAOD::TrackParticle*>(jettracks[i]);
-      
+
       bool acceptSyst = 
-	(
+      	(
 	 m_appliedSystEnum==NONE || 
 	 m_appliedSystEnum==QG_NCHARGEDEXP || m_appliedSystEnum==QG_NCHARGEDME || m_appliedSystEnum==QG_NCHARGEDPDF ||
 	 (m_appliedSystEnum==QG_TRACKEFFICIENCY && m_trkTruthFilterTool->accept(trk) && m_jetTrackFilterTool->accept(trk,jet)) ||
-	 (m_appliedSystEnum==QG_TRACKFAKES && m_trkFakeTool->accept(trk))
-	 );
+      	 (m_appliedSystEnum==QG_TRACKFAKES && m_trkFakeTool->accept(trk))
+      	 );
       if (!acceptSyst) continue;
 
       bool accept = (trk->pt()>500 && m_trkSelectionTool->accept(*trk) && 
