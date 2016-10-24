@@ -1,6 +1,11 @@
 #include "JetQGTagger/JetQGTagger.h"
 
+#include <TRandom3.h>
 #include "InDetTrackSelectionTool/InDetTrackSelectionTool.h"
+#include "InDetTrackSystematicsTools/InDetTrackTruthFilterTool.h"
+#include "InDetTrackSystematicsTools/InDetTrackTruthOriginTool.h"
+#include "InDetTrackSystematicsTools/JetTrackFilterTool.h"
+
 
 namespace CP {
 
@@ -29,14 +34,48 @@ namespace CP {
     m_trkSelectionTool->setProperty( "maxNPixelHoles", 1 );
     m_trkSelectionTool->initialize();
 
+
+    m_trkTruthOriginTool = new InDet::InDetTrackTruthOriginTool("InDet::InDetTrackTruthOriginTool");
+    m_trkTruthOriginTool->initialize();
+    
+    m_trkTruthFilterTool = new InDet::InDetTrackTruthFilterTool("trackfiltertool");
+    m_trkTruthFilterTool->setProperty( "Seed", 1234 );
+    m_trkTruthFilterTool->initialize();
+    CP::SystematicSet systSetTrk = {
+      InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_GLOBAL],
+      InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_IBL],
+      InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_PP0],
+      InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_PHYSMODEL]
+    };
+    m_trkTruthFilterTool->applySystematicVariation(systSetTrk);
+    
+    m_trkFakeTool = new InDet::InDetTrackTruthFilterTool("trackfaketool");
+    m_trkFakeTool->setProperty( "Seed", 1234 );
+    m_trkFakeTool->initialize();
+    CP::SystematicSet systSetTrkFake = {
+      InDet::TrackSystematicMap[InDet::TRK_FAKE_RATE]
+    };
+    m_trkFakeTool->applySystematicVariation(systSetTrkFake);
+    
+    m_jetTrackFilterTool = new InDet::JetTrackFilterTool("jettrackfiltertool");
+    m_jetTrackFilterTool->setProperty( "Seed", 1234 );
+    m_jetTrackFilterTool->initialize();
+    CP::SystematicSet systSetJet = {
+      InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_TIDE]
+    };
+    m_jetTrackFilterTool->applySystematicVariation(systSetJet);
+    
     return StatusCode::SUCCESS;
   }
 
   StatusCode JetQGTagger::finalize(){
 
-  delete m_trkSelectionTool;
-
-  return StatusCode::SUCCESS;
+    delete m_trkSelectionTool;
+    delete m_trkTruthFilterTool;
+    delete m_trkFakeTool;
+    delete m_jetTrackFilterTool;
+    
+    return StatusCode::SUCCESS;
   }
 
   StatusCode JetQGTagger::setTagger(const xAOD::Jet * jet, const xAOD::Vertex * pv){
@@ -71,6 +110,15 @@ namespace CP {
       
       const xAOD::TrackParticle* trk = static_cast<const xAOD::TrackParticle*>(jettracks[i]);
       
+      bool acceptSyst = 
+	(
+	 m_appliedSystEnum==NONE || 
+	 m_appliedSystEnum==QG_NCHARGEDEXP || m_appliedSystEnum==QG_NCHARGEDME || m_appliedSystEnum==QG_NCHARGEDPDF ||
+	 (m_appliedSystEnum==QG_TRACKEFFICIENCY && m_trkTruthFilterTool->accept(trk) && m_jetTrackFilterTool->accept(trk,jet)) ||
+	 (m_appliedSystEnum==QG_TRACKFAKES && m_trkFakeTool->accept(trk))
+	 );
+      if (!acceptSyst) continue;
+
       bool accept = (trk->pt()>500 && m_trkSelectionTool->accept(*trk) && 
 		     (trk->vertex()==pv ||
 		      (!trk->vertex() && 
@@ -82,9 +130,30 @@ namespace CP {
     
     return ntracks;
   }
-
+  
   SystematicCode JetQGTagger::sysApplySystematicVariation(const SystematicSet& systSet){
-
+    m_appliedSystEnum = NONE;
+    if (systSet.size()==0) {
+      ATH_MSG_DEBUG("No affecting systematics received.");
+      return SystematicCode::Ok;
+    } else if (systSet.size()>1) {
+      ATH_MSG_WARNING("Tool does not support multiple systematics, returning unsupported" );
+      return CP::SystematicCode::Unsupported;
+    }
+    SystematicVariation systVar = *systSet.begin();
+    if (systVar == SystematicVariation("")) m_appliedSystEnum = NONE;
+    else if (systVar == QGntrackSyst::trackefficiency) m_appliedSystEnum = QG_TRACKEFFICIENCY;
+    else if (systVar == QGntrackSyst::trackfakes) m_appliedSystEnum = QG_TRACKFAKES;
+    else if (systVar == QGntrackSyst::nchargedexp) m_appliedSystEnum = QG_NCHARGEDEXP;
+    else if (systVar == QGntrackSyst::nchargedme) m_appliedSystEnum = QG_NCHARGEDME;
+    else if (systVar == QGntrackSyst::nchargedpdf) m_appliedSystEnum = QG_NCHARGEDPDF;
+    else {
+      ATH_MSG_WARNING("unsupported systematic applied");
+      return SystematicCode::Unsupported;
+    }
+    
+    ATH_MSG_DEBUG("applied systematic is " << m_appliedSystEnum);
+    return SystematicCode::Ok;
   }
-
+  
 } /* namespace CP */
