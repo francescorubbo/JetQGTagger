@@ -5,6 +5,8 @@
 #include "PATInterfaces/SystematicsTool.h"
 #include "AsgTools/AsgTool.h"
 
+#include <TH2D.h>
+
 namespace InDet { class InDetTrackSelectionTool; }
 namespace InDet { class InDetTrackTruthFilterTool; }
 namespace InDet { class InDetTrackTruthOriginTool; }
@@ -16,9 +18,12 @@ namespace CP {
     NONE,
     QG_TRACKEFFICIENCY,
     QG_TRACKFAKES,
-    QG_NCHARGEDEXP,
-    QG_NCHARGEDME,
-    QG_NCHARGEDPDF
+    QG_NCHARGEDEXP_UP,
+    QG_NCHARGEDME_UP,
+    QG_NCHARGEDPDF_UP,
+    QG_NCHARGEDEXP_DOWN,
+    QG_NCHARGEDME_DOWN,
+    QG_NCHARGEDPDF_DOWN
   };
 
   class JetQGTagger: public IJetQGTagger, public asg::AsgTool, public SystematicsTool{
@@ -40,9 +45,35 @@ namespace CP {
 
   private:
     JetQGTagger();
-    int getNTrack(const xAOD::Jet * jet, const xAOD::Vertex * pv);
+    StatusCode getNTrack(const xAOD::Jet * jet, const xAOD::Vertex * pv, int &ntracks);
+    StatusCode getNTrackWeight(const xAOD::Jet * jet, double &weight);
+
+    SystApplied m_appliedSystEnum;
     
+    TH2D* m_hquark;
+    TH2D* m_hgluon;
+
+    TH2D* m_exp_hquark_up;
+    TH2D* m_exp_hquark_down;
+    TH2D* m_exp_hgluon_up;
+    TH2D* m_exp_hgluon_down;
+
+    TH2D* m_me_hquark_up;
+    TH2D* m_me_hquark_down;
+    TH2D* m_me_hgluon_up;
+    TH2D* m_me_hgluon_down;
+
+    TH2D* m_pdf_hquark_up;
+    TH2D* m_pdf_hquark_down;
+    TH2D* m_pdf_hgluon_up;
+    TH2D* m_pdf_hgluon_down;
+
+    StatusCode loadHist(TH2D* hist,std::string filename,std::string histname);
+
     std::string m_taggername;
+    std::string m_expfile;
+    std::string m_mefile;
+    std::string m_pdffile;
     std::string m_weight_decoration_name;
     std::string m_tagger_decoration_name;    
     float m_minpt;
@@ -51,12 +82,10 @@ namespace CP {
     SG::AuxElement::Decorator< float >* m_weightdec;
 
     InDet::InDetTrackSelectionTool * m_trkSelectionTool;
-
-    SystApplied m_appliedSystEnum;
-    InDet::InDetTrackTruthOriginTool * m_trkTruthOriginTool; //!
-    InDet::InDetTrackTruthFilterTool * m_trkTruthFilterTool; //!
-    InDet::InDetTrackTruthFilterTool * m_trkFakeTool; //!
-    InDet::JetTrackFilterTool * m_jetTrackFilterTool; //!
+    InDet::InDetTrackTruthOriginTool * m_trkTruthOriginTool;
+    InDet::InDetTrackTruthFilterTool * m_trkTruthFilterTool;
+    InDet::InDetTrackTruthFilterTool * m_trkFakeTool;
+    InDet::JetTrackFilterTool * m_jetTrackFilterTool;
 
   };      
 
