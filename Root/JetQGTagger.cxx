@@ -27,9 +27,9 @@ namespace CP {
 						      m_pdf_hgluon_down(nullptr)
   {
     declareProperty( "Tagger", m_taggername = "ntrack");
-    declareProperty( "ExpWeightFile", m_expfile = "JetQGTagger/share/qgsyst_exp.root");
-    declareProperty( "MEWeightFile", m_mefile = "JetQGTagger/share/qgsyst_me.root");
-    declareProperty( "PDFWeightFile", m_pdffile = "JetQGTagger/share/qgsyst_pdf.root");
+    declareProperty( "ExpWeightFile", m_expfile = "JetQGTagger/qgsyst_exp.root");
+    declareProperty( "MEWeightFile", m_mefile = "JetQGTagger/qgsyst_me.root");
+    declareProperty( "PDFWeightFile", m_pdffile = "JetQGTagger/qgsyst_pdf.root");
     declareProperty( "MinPt", m_minpt = 50e3);
     declareProperty( "MinEta", m_maxeta = 2.1);
     declareProperty( "WeightDecorationName", m_weight_decoration_name = "qgTaggerWeight");
