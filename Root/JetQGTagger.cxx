@@ -107,7 +107,7 @@ namespace CP {
     this->loadHist(m_pdf_hquark_down,m_pdffile,"h2dquark_down");
     this->loadHist(m_pdf_hgluon_up,  m_pdffile,"h2dgluon_up");
     this->loadHist(m_pdf_hgluon_down,m_pdffile,"h2dgluon_down");
-    
+   
     return StatusCode::SUCCESS;
   }
 
@@ -203,8 +203,20 @@ namespace CP {
       return StatusCode::SUCCESS;
     }// if pdgid<0
     
-    static const SG::AuxElement::Decorator<ElementLink<xAOD::JetContainer> > dec_truthjet("GhostTruthAssociationLink");
-    const xAOD::Jet* tjet = *(dec_truthjet(*jet));
+    const xAOD::Jet* tjet;
+    if ( jet->isAvailable< ElementLink<xAOD::JetContainer> >("GhostTruthAssociationLink") ){
+      if (jet->auxdata< ElementLink<xAOD::JetContainer> >("GhostTruthAssociationLink").isValid() )
+	tjet = * jet->auxdata< ElementLink<xAOD::JetContainer> >("GhostTruthAssociationLink");
+      else {
+	ATH_MSG_WARNING("Cannot access truth: setting weight to 1");
+	return StatusCode::FAILURE;
+      } //endelse isValid
+    } //endif isAvailable
+    else {
+      ATH_MSG_WARNING("Cannot access truth: setting weight to 1");
+      return StatusCode::FAILURE;
+    }//endelse isAvailable
+    
     double tjetpt = tjet->pt()*0.001;
     double tjeteta = tjet->eta();
     if( tjetpt<50 || fabs(tjeteta)>2.1){
@@ -215,7 +227,7 @@ namespace CP {
     // compute truth ntrk
     int tntrk = 0;
     for (size_t ind = 0; ind < tjet->numConstituents(); ind++) {
-      const xAOD::TruthParticle *part = static_cast<const xAOD::TruthParticle*>(jet->rawConstituent(ind));
+      const xAOD::TruthParticle *part = static_cast<const xAOD::TruthParticle*>(tjet->rawConstituent(ind));
       if (!part) continue;
       if( ! (part->status() == 1) ) continue; // final state
       if ((part->barcode())>2e5) continue;
@@ -224,7 +236,6 @@ namespace CP {
       double pt = part->pt();
       if( pt>500 ) tntrk++;
     }
-
 
     if ( pdgid==21 ){
       int ptbin = m_hgluon->GetXaxis()->FindBin(tjetpt);
@@ -244,6 +255,7 @@ namespace CP {
   
   SystematicCode JetQGTagger::sysApplySystematicVariation(const SystematicSet& systSet){
     m_appliedSystEnum = NONE;
+
     if (systSet.size()==0) {
       ATH_MSG_DEBUG("No affecting systematics received.");
       return SystematicCode::Ok;
@@ -276,7 +288,7 @@ namespace CP {
     return SystematicCode::Ok;
   }
 
-  StatusCode JetQGTagger::loadHist(TH2D* hist,std::string fname,std::string histname){
+  StatusCode JetQGTagger::loadHist(TH2D *&hist,std::string fname,std::string histname){
     std::string filename = PathResolverFindCalibFile(fname);
     if (filename.empty()){
       ATH_MSG_WARNING ( "Could NOT resolve file name " << fname);
@@ -286,6 +298,7 @@ namespace CP {
     }
     TFile* infile = TFile::Open(filename.c_str());
     hist = dynamic_cast<TH2D*>(infile->Get(histname.c_str()));
+
     hist->SetDirectory(0);
     return StatusCode::SUCCESS;
   }

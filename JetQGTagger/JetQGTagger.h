@@ -68,7 +68,7 @@ namespace CP {
     TH2D* m_pdf_hgluon_up;
     TH2D* m_pdf_hgluon_down;
 
-    StatusCode loadHist(TH2D* hist,std::string filename,std::string histname);
+    StatusCode loadHist(TH2D *&hist,std::string filename,std::string histname);
 
     std::string m_taggername;
     std::string m_expfile;
