@@ -42,7 +42,7 @@ namespace CP {
     m_weightdec = new SG::AuxElement::Decorator< float>(m_weight_decoration_name);
     m_taggerdec  = new SG::AuxElement::Decorator< float>(m_tagger_decoration_name);
     
-    m_trkSelectionTool = new InDet::InDetTrackSelectionTool("trackselectiontool");
+    m_trkSelectionTool = new InDet::InDetTrackSelectionTool(name()+"_trackselectiontool");
     m_trkSelectionTool->setProperty( "CutLevel", "Loose" );
     m_trkSelectionTool->setProperty( "maxAbsEta", 2.5 );
     m_trkSelectionTool->setProperty( "minNSiHits", 7 );
@@ -55,7 +55,7 @@ namespace CP {
     m_trkTruthOriginTool = new InDet::InDetTrackTruthOriginTool("InDet::InDetTrackTruthOriginTool");
     m_trkTruthOriginTool->initialize();
     
-    m_trkTruthFilterTool = new InDet::InDetTrackTruthFilterTool("trackfiltertool");
+    m_trkTruthFilterTool = new InDet::InDetTrackTruthFilterTool(name()+"_trackfiltertool");
     m_trkTruthFilterTool->setProperty( "Seed", 1234 );
     m_trkTruthFilterTool->initialize();
     CP::SystematicSet systSetTrk = {
@@ -66,7 +66,7 @@ namespace CP {
     };
     m_trkTruthFilterTool->applySystematicVariation(systSetTrk);
     
-    m_trkFakeTool = new InDet::InDetTrackTruthFilterTool("trackfaketool");
+    m_trkFakeTool = new InDet::InDetTrackTruthFilterTool(name()+"_trackfaketool");
     m_trkFakeTool->setProperty( "Seed", 1234 );
     m_trkFakeTool->initialize();
     CP::SystematicSet systSetTrkFake = {
@@ -74,7 +74,7 @@ namespace CP {
     };
     m_trkFakeTool->applySystematicVariation(systSetTrkFake);
     
-    m_jetTrackFilterTool = new InDet::JetTrackFilterTool("jettrackfiltertool");
+    m_jetTrackFilterTool = new InDet::JetTrackFilterTool(name()+"_jettrackfiltertool");
     m_jetTrackFilterTool->setProperty( "Seed", 1234 );
     m_jetTrackFilterTool->initialize();
     CP::SystematicSet systSetJet = {
@@ -220,7 +220,7 @@ namespace CP {
     double tjetpt = tjet->pt()*0.001;
     double tjeteta = tjet->eta();
     if( tjetpt<50 || fabs(tjeteta)>2.1){
-      ATH_MSG_INFO("Out of fiducial region: setting weight to 1");
+      ATH_MSG_INFO("Outside of fiducial region: setting weight to 1");
       return StatusCode::SUCCESS;
     }
     
@@ -294,7 +294,7 @@ namespace CP {
       ATH_MSG_WARNING ( "Could NOT resolve file name " << fname);
       return StatusCode::FAILURE;
     }  else{
-      ATH_MSG_INFO(" Path found = "<<filename);
+      ATH_MSG_DEBUG(" Path found = "<<filename);
     }
     TFile* infile = TFile::Open(filename.c_str());
     hist = dynamic_cast<TH2D*>(infile->Get(histname.c_str()));
