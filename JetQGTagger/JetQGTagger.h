@@ -4,13 +4,14 @@
 #include "JetQGTagger/IJetQGTagger.h"
 #include "PATInterfaces/SystematicsTool.h"
 #include "AsgTools/AsgTool.h"
+#include "AsgTools/AnaToolHandle.h"
 
 #include <TH2D.h>
 
-namespace InDet { class InDetTrackSelectionTool; }
-namespace InDet { class InDetTrackTruthFilterTool; }
-namespace InDet { class InDetTrackTruthOriginTool; }
-namespace InDet { class JetTrackFilterTool; }
+namespace InDet { class IInDetTrackSelectionTool; }
+namespace InDet { class IInDetTrackTruthFilterTool; }
+namespace InDet { class IInDetTrackTruthOriginTool; }
+namespace InDet { class IJetTrackFilterTool; }
 
 namespace CP {
 
@@ -81,11 +82,11 @@ namespace CP {
     SG::AuxElement::Decorator< float >* m_taggerdec;
     SG::AuxElement::Decorator< float >* m_weightdec;
 
-    InDet::InDetTrackSelectionTool * m_trkSelectionTool;
-    InDet::InDetTrackTruthOriginTool * m_trkTruthOriginTool;
-    InDet::InDetTrackTruthFilterTool * m_trkTruthFilterTool;
-    InDet::InDetTrackTruthFilterTool * m_trkFakeTool;
-    InDet::JetTrackFilterTool * m_jetTrackFilterTool;
+    asg::AnaToolHandle<InDet::IInDetTrackSelectionTool> m_trkSelectionTool;
+    asg::AnaToolHandle<InDet::IInDetTrackTruthOriginTool> m_trkTruthOriginTool;
+    asg::AnaToolHandle<InDet::IInDetTrackTruthFilterTool> m_trkTruthFilterTool;
+    asg::AnaToolHandle<InDet::IInDetTrackTruthFilterTool> m_trkFakeTool;
+    asg::AnaToolHandle<InDet::IJetTrackFilterTool> m_jetTrackFilterTool;
 
   };      
 

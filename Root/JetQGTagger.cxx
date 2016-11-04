@@ -42,45 +42,45 @@ namespace CP {
     m_weightdec = new SG::AuxElement::Decorator< float>(m_weight_decoration_name);
     m_taggerdec  = new SG::AuxElement::Decorator< float>(m_tagger_decoration_name);
     
-    m_trkSelectionTool = new InDet::InDetTrackSelectionTool(name()+"_trackselectiontool");
-    m_trkSelectionTool->setProperty( "CutLevel", "Loose" );
-    m_trkSelectionTool->setProperty( "maxAbsEta", 2.5 );
-    m_trkSelectionTool->setProperty( "minNSiHits", 7 );
-    m_trkSelectionTool->setProperty( "maxNPixelSharedHits", 1 );
-    m_trkSelectionTool->setProperty( "maxOneSharedModule", true );
-    m_trkSelectionTool->setProperty( "maxNSiHoles", 2 );
-    m_trkSelectionTool->setProperty( "maxNPixelHoles", 1 );
-    m_trkSelectionTool->initialize();
+    assert( ASG_MAKE_ANA_TOOL( m_trkSelectionTool,  InDet::InDetTrackSelectionTool ) );
+    assert( m_trkSelectionTool.setProperty( "CutLevel", "Loose" ) );
+    assert( m_trkSelectionTool.setProperty( "maxAbsEta", 2.5 ) );
+    assert( m_trkSelectionTool.setProperty( "minNSiHits", 7 ) );
+    assert( m_trkSelectionTool.setProperty( "maxNPixelSharedHits", 1 ) );
+    assert( m_trkSelectionTool.setProperty( "maxOneSharedModule", true ) );
+    assert( m_trkSelectionTool.setProperty( "maxNSiHoles", 2 ) );
+    assert( m_trkSelectionTool.setProperty( "maxNPixelHoles", 1 ) );
+    assert( m_trkSelectionTool.retrieve() );
 
-    m_trkTruthOriginTool = new InDet::InDetTrackTruthOriginTool("InDet::InDetTrackTruthOriginTool");
-    m_trkTruthOriginTool->initialize();
+    assert( ASG_MAKE_ANA_TOOL( m_trkTruthOriginTool, InDet::InDetTrackTruthOriginTool ) );
+    assert( m_trkTruthOriginTool.retrieve() );
     
-    m_trkTruthFilterTool = new InDet::InDetTrackTruthFilterTool(name()+"_trackfiltertool");
-    m_trkTruthFilterTool->setProperty( "Seed", 1234 );
-    m_trkTruthFilterTool->initialize();
+    assert( ASG_MAKE_ANA_TOOL( m_trkTruthFilterTool, InDet::InDetTrackTruthFilterTool ) );
+    assert( m_trkTruthFilterTool.setProperty( "Seed", 1234 ) );
+    assert( m_trkTruthFilterTool.retrieve() );
     CP::SystematicSet systSetTrk = {
       InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_GLOBAL],
       InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_IBL],
       InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_PP0],
       InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_PHYSMODEL]
     };
-    m_trkTruthFilterTool->applySystematicVariation(systSetTrk);
+    assert( m_trkTruthFilterTool->applySystematicVariation(systSetTrk) );
     
-    m_trkFakeTool = new InDet::InDetTrackTruthFilterTool(name()+"_trackfaketool");
-    m_trkFakeTool->setProperty( "Seed", 1234 );
-    m_trkFakeTool->initialize();
+    assert( ASG_MAKE_ANA_TOOL( m_trkFakeTool, InDet::InDetTrackTruthFilterTool ) );
+    assert( m_trkFakeTool.setProperty( "Seed", 1234 ) );
+    assert( m_trkFakeTool.retrieve() );
     CP::SystematicSet systSetTrkFake = {
       InDet::TrackSystematicMap[InDet::TRK_FAKE_RATE]
     };
-    m_trkFakeTool->applySystematicVariation(systSetTrkFake);
+    assert( m_trkFakeTool->applySystematicVariation(systSetTrkFake) );
     
-    m_jetTrackFilterTool = new InDet::JetTrackFilterTool(name()+"_jettrackfiltertool");
-    m_jetTrackFilterTool->setProperty( "Seed", 1234 );
-    m_jetTrackFilterTool->initialize();
+    assert( ASG_MAKE_ANA_TOOL( m_jetTrackFilterTool, InDet::JetTrackFilterTool ) );
+    assert( m_jetTrackFilterTool.setProperty( "Seed", 1234 ) );
+    assert( m_jetTrackFilterTool.retrieve() );
     CP::SystematicSet systSetJet = {
       InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_TIDE]
     };
-    m_jetTrackFilterTool->applySystematicVariation(systSetJet);
+    assert( m_jetTrackFilterTool->applySystematicVariation(systSetJet) );
 
     if (!addAffectingSystematic(QGntrackSyst::trackfakes,true) || 
 	!addAffectingSystematic(QGntrackSyst::trackefficiency,true) ||
@@ -112,11 +112,6 @@ namespace CP {
   }
 
   StatusCode JetQGTagger::finalize(){
-
-    delete m_trkSelectionTool;
-    delete m_trkTruthFilterTool;
-    delete m_trkFakeTool;
-    delete m_jetTrackFilterTool;
     
     delete m_exp_hquark_up; 
     delete m_exp_hquark_down;
