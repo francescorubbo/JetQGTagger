@@ -5,12 +5,12 @@
 #include "PATInterfaces/SystematicsTool.h"
 #include "AsgTools/AsgTool.h"
 #include "AsgTools/AnaToolHandle.h"
+#include "InDetTrackSystematicsTools/InDetTrackTruthOriginTool.h"
 
 #include <TH2D.h>
 
 namespace InDet { class IInDetTrackSelectionTool; }
 namespace InDet { class IInDetTrackTruthFilterTool; }
-namespace InDet { class IInDetTrackTruthOriginTool; }
 namespace InDet { class IJetTrackFilterTool; }
 
 namespace CP {
@@ -83,10 +83,10 @@ namespace CP {
     SG::AuxElement::Decorator< float >* m_weightdec;
 
     asg::AnaToolHandle<InDet::IInDetTrackSelectionTool> m_trkSelectionTool;
-    asg::AnaToolHandle<InDet::IInDetTrackTruthOriginTool> m_trkTruthOriginTool;
     asg::AnaToolHandle<InDet::IInDetTrackTruthFilterTool> m_trkTruthFilterTool;
     asg::AnaToolHandle<InDet::IInDetTrackTruthFilterTool> m_trkFakeTool;
     asg::AnaToolHandle<InDet::IJetTrackFilterTool> m_jetTrackFilterTool;
+    std::unique_ptr<InDet::InDetTrackTruthOriginTool> m_originTool;
 
   };      
 

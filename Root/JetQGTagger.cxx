@@ -7,6 +7,9 @@
 #include "InDetTrackSystematicsTools/JetTrackFilterTool.h"
 #include "PathResolver/PathResolver.h"
 
+#include "CxxUtils/make_unique.h"
+using CxxUtils::make_unique;
+
 namespace CP {
 
   JetQGTagger::JetQGTagger( const std::string& name): asg::AsgTool( name ),
@@ -24,7 +27,11 @@ namespace CP {
 						      m_pdf_hquark_up(nullptr),
 						      m_pdf_hquark_down(nullptr),
 						      m_pdf_hgluon_up(nullptr),
-						      m_pdf_hgluon_down(nullptr)
+						      m_pdf_hgluon_down(nullptr),
+						      m_trkSelectionTool(name+"_trackselectiontool", this),
+						      m_trkTruthFilterTool(name+"_trackfiltertool",this),
+						      m_trkFakeTool(name+"_trackfaketool",this),
+						      m_jetTrackFilterTool(name+"_jettrackfiltertool",this)
   {
     declareProperty( "Tagger", m_taggername = "ntrack");
     declareProperty( "ExpWeightFile", m_expfile = "JetQGTagger/qgsyst_exp.root");
@@ -52,11 +59,15 @@ namespace CP {
     assert( m_trkSelectionTool.setProperty( "maxNPixelHoles", 1 ) );
     assert( m_trkSelectionTool.retrieve() );
 
-    assert( ASG_MAKE_ANA_TOOL( m_trkTruthOriginTool, InDet::InDetTrackTruthOriginTool ) );
-    assert( m_trkTruthOriginTool.retrieve() );
-    
     assert( ASG_MAKE_ANA_TOOL( m_trkTruthFilterTool, InDet::InDetTrackTruthFilterTool ) );
+    assert( ASG_MAKE_ANA_TOOL( m_trkFakeTool, InDet::InDetTrackTruthFilterTool ) );
+
+    m_originTool = make_unique<InDet::InDetTrackTruthOriginTool> ( "InDetTrackTruthOriginTool" );
+    assert( m_originTool->initialize() );
+    ToolHandle< InDet::IInDetTrackTruthOriginTool > trackTruthOriginToolHandle( m_originTool.get() );
+    
     assert( m_trkTruthFilterTool.setProperty( "Seed", 1234 ) );
+    assert( m_trkTruthFilterTool.setProperty( "trackOriginTool", trackTruthOriginToolHandle ) );
     assert( m_trkTruthFilterTool.retrieve() );
     CP::SystematicSet systSetTrk = {
       InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_GLOBAL],
@@ -66,8 +77,8 @@ namespace CP {
     };
     assert( m_trkTruthFilterTool->applySystematicVariation(systSetTrk) );
     
-    assert( ASG_MAKE_ANA_TOOL( m_trkFakeTool, InDet::InDetTrackTruthFilterTool ) );
     assert( m_trkFakeTool.setProperty( "Seed", 1234 ) );
+    assert( m_trkFakeTool.setProperty( "trackOriginTool", trackTruthOriginToolHandle ) );
     assert( m_trkFakeTool.retrieve() );
     CP::SystematicSet systSetTrkFake = {
       InDet::TrackSystematicMap[InDet::TRK_FAKE_RATE]
@@ -168,9 +179,9 @@ namespace CP {
 
       bool acceptSyst = true;
       if ( m_appliedSystEnum==QG_TRACKEFFICIENCY )
-	acceptSyst = ( m_trkTruthFilterTool->accept(trk) && m_jetTrackFilterTool->accept(trk,jet) );
+      	acceptSyst = ( m_trkTruthFilterTool->accept(trk) && m_jetTrackFilterTool->accept(trk,jet) );
       else if ( m_appliedSystEnum==QG_TRACKFAKES )
-	acceptSyst = m_trkFakeTool->accept(trk); 
+      	acceptSyst = m_trkFakeTool->accept(trk); 
       if (!acceptSyst) continue;
 
       bool accept = (trk->pt()>500 && m_trkSelectionTool->accept(*trk) && 
