@@ -7,6 +7,9 @@
 #include "InDetTrackSystematicsTools/JetTrackFilterTool.h"
 #include "PathResolver/PathResolver.h"
 
+#include "CxxUtils/make_unique.h"
+using CxxUtils::make_unique;
+
 namespace CP {
 
   JetQGTagger::JetQGTagger( const std::string& name): asg::AsgTool( name ),
@@ -24,7 +27,11 @@ namespace CP {
 						      m_pdf_hquark_up(nullptr),
 						      m_pdf_hquark_down(nullptr),
 						      m_pdf_hgluon_up(nullptr),
-						      m_pdf_hgluon_down(nullptr)
+						      m_pdf_hgluon_down(nullptr),
+						      m_trkSelectionTool(name+"_trackselectiontool", this),
+						      m_trkTruthFilterTool(name+"_trackfiltertool",this),
+						      m_trkFakeTool(name+"_trackfaketool",this),
+						      m_jetTrackFilterTool(name+"_jettrackfiltertool",this)
   {
     declareProperty( "Tagger", m_taggername = "ntrack");
     declareProperty( "ExpWeightFile", m_expfile = "JetQGTagger/qgsyst_exp.root");
@@ -42,45 +49,49 @@ namespace CP {
     m_weightdec = new SG::AuxElement::Decorator< float>(m_weight_decoration_name);
     m_taggerdec  = new SG::AuxElement::Decorator< float>(m_tagger_decoration_name);
     
-    m_trkSelectionTool = new InDet::InDetTrackSelectionTool("trackselectiontool");
-    m_trkSelectionTool->setProperty( "CutLevel", "Loose" );
-    m_trkSelectionTool->setProperty( "maxAbsEta", 2.5 );
-    m_trkSelectionTool->setProperty( "minNSiHits", 7 );
-    m_trkSelectionTool->setProperty( "maxNPixelSharedHits", 1 );
-    m_trkSelectionTool->setProperty( "maxOneSharedModule", true );
-    m_trkSelectionTool->setProperty( "maxNSiHoles", 2 );
-    m_trkSelectionTool->setProperty( "maxNPixelHoles", 1 );
-    m_trkSelectionTool->initialize();
+    assert( ASG_MAKE_ANA_TOOL( m_trkSelectionTool,  InDet::InDetTrackSelectionTool ) );
+    assert( m_trkSelectionTool.setProperty( "CutLevel", "Loose" ) );
+    assert( m_trkSelectionTool.setProperty( "maxAbsEta", 2.5 ) );
+    assert( m_trkSelectionTool.setProperty( "minNSiHits", 7 ) );
+    assert( m_trkSelectionTool.setProperty( "maxNPixelSharedHits", 1 ) );
+    assert( m_trkSelectionTool.setProperty( "maxOneSharedModule", true ) );
+    assert( m_trkSelectionTool.setProperty( "maxNSiHoles", 2 ) );
+    assert( m_trkSelectionTool.setProperty( "maxNPixelHoles", 1 ) );
+    assert( m_trkSelectionTool.retrieve() );
 
-    m_trkTruthOriginTool = new InDet::InDetTrackTruthOriginTool("InDet::InDetTrackTruthOriginTool");
-    m_trkTruthOriginTool->initialize();
+    assert( ASG_MAKE_ANA_TOOL( m_trkTruthFilterTool, InDet::InDetTrackTruthFilterTool ) );
+    assert( ASG_MAKE_ANA_TOOL( m_trkFakeTool, InDet::InDetTrackTruthFilterTool ) );
+
+    m_originTool = make_unique<InDet::InDetTrackTruthOriginTool> ( "InDetTrackTruthOriginTool" );
+    assert( m_originTool->initialize() );
+    ToolHandle< InDet::IInDetTrackTruthOriginTool > trackTruthOriginToolHandle( m_originTool.get() );
     
-    m_trkTruthFilterTool = new InDet::InDetTrackTruthFilterTool("trackfiltertool");
-    m_trkTruthFilterTool->setProperty( "Seed", 1234 );
-    m_trkTruthFilterTool->initialize();
+    assert( m_trkTruthFilterTool.setProperty( "Seed", 1234 ) );
+    assert( m_trkTruthFilterTool.setProperty( "trackOriginTool", trackTruthOriginToolHandle ) );
+    assert( m_trkTruthFilterTool.retrieve() );
     CP::SystematicSet systSetTrk = {
       InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_GLOBAL],
       InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_IBL],
       InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_PP0],
       InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_PHYSMODEL]
     };
-    m_trkTruthFilterTool->applySystematicVariation(systSetTrk);
+    assert( m_trkTruthFilterTool->applySystematicVariation(systSetTrk) );
     
-    m_trkFakeTool = new InDet::InDetTrackTruthFilterTool("trackfaketool");
-    m_trkFakeTool->setProperty( "Seed", 1234 );
-    m_trkFakeTool->initialize();
+    assert( m_trkFakeTool.setProperty( "Seed", 1234 ) );
+    assert( m_trkFakeTool.setProperty( "trackOriginTool", trackTruthOriginToolHandle ) );
+    assert( m_trkFakeTool.retrieve() );
     CP::SystematicSet systSetTrkFake = {
       InDet::TrackSystematicMap[InDet::TRK_FAKE_RATE]
     };
-    m_trkFakeTool->applySystematicVariation(systSetTrkFake);
+    assert( m_trkFakeTool->applySystematicVariation(systSetTrkFake) );
     
-    m_jetTrackFilterTool = new InDet::JetTrackFilterTool("jettrackfiltertool");
-    m_jetTrackFilterTool->setProperty( "Seed", 1234 );
-    m_jetTrackFilterTool->initialize();
+    assert( ASG_MAKE_ANA_TOOL( m_jetTrackFilterTool, InDet::JetTrackFilterTool ) );
+    assert( m_jetTrackFilterTool.setProperty( "Seed", 1234 ) );
+    assert( m_jetTrackFilterTool.retrieve() );
     CP::SystematicSet systSetJet = {
       InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_TIDE]
     };
-    m_jetTrackFilterTool->applySystematicVariation(systSetJet);
+    assert( m_jetTrackFilterTool->applySystematicVariation(systSetJet) );
 
     if (!addAffectingSystematic(QGntrackSyst::trackfakes,true) || 
 	!addAffectingSystematic(QGntrackSyst::trackefficiency,true) ||
@@ -112,11 +123,6 @@ namespace CP {
   }
 
   StatusCode JetQGTagger::finalize(){
-
-    delete m_trkSelectionTool;
-    delete m_trkTruthFilterTool;
-    delete m_trkFakeTool;
-    delete m_jetTrackFilterTool;
     
     delete m_exp_hquark_up; 
     delete m_exp_hquark_down;
@@ -173,9 +179,9 @@ namespace CP {
 
       bool acceptSyst = true;
       if ( m_appliedSystEnum==QG_TRACKEFFICIENCY )
-	acceptSyst = ( m_trkTruthFilterTool->accept(trk) && m_jetTrackFilterTool->accept(trk,jet) );
+      	acceptSyst = ( m_trkTruthFilterTool->accept(trk) && m_jetTrackFilterTool->accept(trk,jet) );
       else if ( m_appliedSystEnum==QG_TRACKFAKES )
-	acceptSyst = m_trkFakeTool->accept(trk); 
+      	acceptSyst = m_trkFakeTool->accept(trk); 
       if (!acceptSyst) continue;
 
       bool accept = (trk->pt()>500 && m_trkSelectionTool->accept(*trk) && 
@@ -220,7 +226,7 @@ namespace CP {
     double tjetpt = tjet->pt()*0.001;
     double tjeteta = tjet->eta();
     if( tjetpt<50 || fabs(tjeteta)>2.1){
-      ATH_MSG_INFO("Out of fiducial region: setting weight to 1");
+      ATH_MSG_INFO("Outside of fiducial region: setting weight to 1");
       return StatusCode::SUCCESS;
     }
     
@@ -294,7 +300,7 @@ namespace CP {
       ATH_MSG_WARNING ( "Could NOT resolve file name " << fname);
       return StatusCode::FAILURE;
     }  else{
-      ATH_MSG_INFO(" Path found = "<<filename);
+      ATH_MSG_DEBUG(" Path found = "<<filename);
     }
     TFile* infile = TFile::Open(filename.c_str());
     hist = dynamic_cast<TH2D*>(infile->Get(histname.c_str()));
