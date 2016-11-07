@@ -9,14 +9,14 @@
 namespace CP {
 
   namespace QGntrackSyst {
-    const static SystematicVariation trackefficiency("QG_trackEfficiency");
-    const static SystematicVariation trackfakes("QG_trackFakes");
-    const static SystematicVariation nchargedexp_up("QG_nchargedExp_up");
-    const static SystematicVariation nchargedme_up("QG_nchargedME_up");
-    const static SystematicVariation nchargedpdf_up("QG_nchargedPDF_up");
-    const static SystematicVariation nchargedexp_down("QG_nchargedExp_down");
-    const static SystematicVariation nchargedme_down("QG_nchargedME_down");
-    const static SystematicVariation nchargedpdf_down("QG_nchargedPDF_down");
+    const static SystematicVariation trackefficiency("JET_QG_trackEfficiency");
+    const static SystematicVariation trackfakes("JET_QG_trackFakes");
+    const static SystematicVariation nchargedexp_up("JET_QG_nchargedExp_up");
+    const static SystematicVariation nchargedme_up("JET_QG_nchargedME_up");
+    const static SystematicVariation nchargedpdf_up("JET_QG_nchargedPDF_up");
+    const static SystematicVariation nchargedexp_down("JET_QG_nchargedExp_down");
+    const static SystematicVariation nchargedme_down("JET_QG_nchargedME_down");
+    const static SystematicVariation nchargedpdf_down("JET_QG_nchargedPDF_down");
   } //namespace QGntrackSyst
 
   class IJetQGTagger : public virtual CP::ISystematicsTool {
