@@ -19,6 +19,7 @@ private
 use GaudiInterface  GaudiInterface-*  External
 use PathResolver    PathResolver-*    Tools
 use InDetTrackSelectionTool InDetTrackSelectionTool-* InnerDetector/InDetRecTools
+use CxxUtils             CxxUtils-*              Control
 
 apply_pattern dual_use_library files="../src/*.cxx ../Root/*.cxx"
 
