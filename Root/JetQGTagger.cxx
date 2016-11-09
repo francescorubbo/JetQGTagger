@@ -65,7 +65,7 @@ namespace CP {
 
     assert( ASG_MAKE_ANA_TOOL( m_originTool, InDet::InDetTrackTruthOriginTool ) );
     // ( "InDetTrackTruthOriginTool" );
-    assert( m_originTool->retrieve() );
+    assert( m_originTool.retrieve() );
     
     assert( m_trkTruthFilterTool.setProperty( "Seed", 1234 ) );
     assert( m_trkTruthFilterTool.setProperty( "trackOriginTool", m_originTool ) );
