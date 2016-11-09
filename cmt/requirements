@@ -15,6 +15,7 @@ apply_pattern declare_calib files="../data/*.root"
 
 private
 
+use GaudiInterface  GaudiInterface-*  External
 use PathResolver    PathResolver-*    Tools
 use InDetTrackSelectionTool InDetTrackSelectionTool-* InnerDetector/InDetRecTools
 use CxxUtils             CxxUtils-*              Control
