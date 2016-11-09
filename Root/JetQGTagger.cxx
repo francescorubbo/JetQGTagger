@@ -31,7 +31,8 @@ namespace CP {
 						      m_trkSelectionTool(name+"_trackselectiontool", this),
 						      m_trkTruthFilterTool(name+"_trackfiltertool",this),
 						      m_trkFakeTool(name+"_trackfaketool",this),
-						      m_jetTrackFilterTool(name+"_jettrackfiltertool",this)
+						      m_jetTrackFilterTool(name+"_jettrackfiltertool",this),
+						      m_originTool(name+"_origintool",this)
   {
     declareProperty( "Tagger", m_taggername = "ntrack");
     declareProperty( "ExpWeightFile", m_expfile = "JetQGTagger/qgsyst_exp.root");
@@ -62,12 +63,12 @@ namespace CP {
     assert( ASG_MAKE_ANA_TOOL( m_trkTruthFilterTool, InDet::InDetTrackTruthFilterTool ) );
     assert( ASG_MAKE_ANA_TOOL( m_trkFakeTool, InDet::InDetTrackTruthFilterTool ) );
 
-    m_originTool = make_unique<InDet::InDetTrackTruthOriginTool> ( "InDetTrackTruthOriginTool" );
-    assert( m_originTool->initialize() );
-    ToolHandle< InDet::IInDetTrackTruthOriginTool > trackTruthOriginToolHandle( m_originTool.get() );
+    assert( ASG_MAKE_ANA_TOOL( m_originTool, InDet::InDetTrackTruthOriginTool ) );
+    // ( "InDetTrackTruthOriginTool" );
+    assert( m_originTool->retrieve() );
     
     assert( m_trkTruthFilterTool.setProperty( "Seed", 1234 ) );
-    assert( m_trkTruthFilterTool.setProperty( "trackOriginTool", trackTruthOriginToolHandle ) );
+    assert( m_trkTruthFilterTool.setProperty( "trackOriginTool", m_originTool ) );
     assert( m_trkTruthFilterTool.retrieve() );
     CP::SystematicSet systSetTrk = {
       InDet::TrackSystematicMap[InDet::TRK_EFF_LOOSE_GLOBAL],
@@ -78,7 +79,7 @@ namespace CP {
     assert( m_trkTruthFilterTool->applySystematicVariation(systSetTrk) );
     
     assert( m_trkFakeTool.setProperty( "Seed", 1234 ) );
-    assert( m_trkFakeTool.setProperty( "trackOriginTool", trackTruthOriginToolHandle ) );
+    assert( m_trkFakeTool.setProperty( "trackOriginTool", m_originTool ) );
     assert( m_trkFakeTool.retrieve() );
     CP::SystematicSet systSetTrkFake = {
       InDet::TrackSystematicMap[InDet::TRK_FAKE_RATE]

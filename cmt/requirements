@@ -9,7 +9,6 @@ use AtlasROOT       AtlasROOT-*       External
 use PATInterfaces   PATInterfaces-*   PhysicsAnalysis/AnalysisCommon
 
 use xAODJet	    xAODJet-*        Event/xAOD
-use InDetTrackSystematicsTools InDetTrackSystematicsTools-* PhysicsAnalysis/TrackingID
 
 apply_pattern declare_calib files="../data/*.root"
 
@@ -19,6 +18,7 @@ use GaudiInterface  GaudiInterface-*  External
 use PathResolver    PathResolver-*    Tools
 use InDetTrackSelectionTool InDetTrackSelectionTool-* InnerDetector/InDetRecTools
 use CxxUtils             CxxUtils-*              Control
+use InDetTrackSystematicsTools InDetTrackSystematicsTools-* PhysicsAnalysis/TrackingID
 
 apply_pattern dual_use_library files="../src/*.cxx ../Root/*.cxx"
 
