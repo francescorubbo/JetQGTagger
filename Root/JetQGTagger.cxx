@@ -52,12 +52,6 @@ namespace CP {
     
     assert( ASG_MAKE_ANA_TOOL( m_trkSelectionTool,  InDet::InDetTrackSelectionTool ) );
     assert( m_trkSelectionTool.setProperty( "CutLevel", "Loose" ) );
-    assert( m_trkSelectionTool.setProperty( "maxAbsEta", 2.5 ) );
-    assert( m_trkSelectionTool.setProperty( "minNSiHits", 7 ) );
-    assert( m_trkSelectionTool.setProperty( "maxNPixelSharedHits", 1 ) );
-    assert( m_trkSelectionTool.setProperty( "maxOneSharedModule", true ) );
-    assert( m_trkSelectionTool.setProperty( "maxNSiHoles", 2 ) );
-    assert( m_trkSelectionTool.setProperty( "maxNPixelHoles", 1 ) );
     assert( m_trkSelectionTool.retrieve() );
 
     assert( ASG_MAKE_ANA_TOOL( m_trkTruthFilterTool, InDet::InDetTrackTruthFilterTool ) );
