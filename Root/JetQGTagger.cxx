@@ -13,7 +13,7 @@ using CxxUtils::make_unique;
 namespace CP {
 
   JetQGTagger::JetQGTagger( const std::string& name): asg::AsgTool( name ),
-						      m_appliedSystEnum(NONE),
+						      m_appliedSystEnum(QG_NONE),
 						      m_hquark(nullptr),
 						      m_hgluon(nullptr),
 						      m_exp_hquark_up(nullptr),
@@ -138,8 +138,19 @@ namespace CP {
     return StatusCode::SUCCESS;
   }
 
-  StatusCode JetQGTagger::setTagger(const xAOD::Jet * jet, const xAOD::Vertex * pv){
+  StatusCode JetQGTagger::setTagger(const xAOD::Jet * jet, const xAOD::Vertex * _pv){
 
+    const xAOD::Vertex *pv = 0;
+    if(_pv) pv = _pv;
+    else{
+	const xAOD::VertexContainer* vxCont = 0;
+      if(evtStore()->retrieve( vxCont, "PrimaryVertices" ).isFailure())
+	ATH_MSG_WARNING("Unable to retrieve primary vertex container PrimaryVertices");
+      else if(vxCont->empty())
+	ATH_MSG_WARNING("Event has no primary vertices!");
+      else
+	for(const auto& vx : *vxCont) if(vx->vertexType()==xAOD::VxType::PriVtx) {pv = vx;break;}
+    }//endelse
 
     double tagger = -1;
     double weight = -1;
@@ -255,7 +266,7 @@ namespace CP {
   }
   
   SystematicCode JetQGTagger::sysApplySystematicVariation(const SystematicSet& systSet){
-    m_appliedSystEnum = NONE;
+    m_appliedSystEnum = QG_NONE;
 
     if (systSet.size()==0) {
       ATH_MSG_DEBUG("No affecting systematics received.");
@@ -265,7 +276,7 @@ namespace CP {
       return CP::SystematicCode::Unsupported;
     }
     SystematicVariation systVar = *systSet.begin();
-    if (systVar == SystematicVariation("")) m_appliedSystEnum = NONE;
+    if (systVar == SystematicVariation("")) m_appliedSystEnum = QG_NONE;
     else if (systVar == QGntrackSyst::trackefficiency) m_appliedSystEnum = QG_TRACKEFFICIENCY;
     else if (systVar == QGntrackSyst::trackfakes) m_appliedSystEnum = QG_TRACKFAKES;
     else if (systVar == QGntrackSyst::nchargedexp_up){ 

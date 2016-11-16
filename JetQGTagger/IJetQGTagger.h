@@ -27,7 +27,7 @@ namespace CP {
     
     virtual ~IJetQGTagger() {}
     
-    virtual StatusCode setTagger(const xAOD::Jet * jet, const xAOD::Vertex * pv) = 0;
+    virtual StatusCode setTagger(const xAOD::Jet * jet, const xAOD::Vertex * _pv = NULL) = 0;
     
   };
 

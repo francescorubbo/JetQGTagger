@@ -16,7 +16,7 @@ namespace InDet { class IInDetTrackTruthOriginTool; }
 namespace CP {
 
   enum QGSystApplied {
-    NONE,
+    QG_NONE,
     QG_TRACKEFFICIENCY,
     QG_TRACKFAKES,
     QG_NCHARGEDEXP_UP,
@@ -36,7 +36,7 @@ namespace CP {
     virtual StatusCode initialize();
     virtual StatusCode finalize();
     
-    StatusCode setTagger(const xAOD::Jet * jet, const xAOD::Vertex * pv);
+    StatusCode setTagger(const xAOD::Jet * jet, const xAOD::Vertex * _pv = NULL);
 
     bool isAffectedBySystematic(const SystematicVariation& var) const{return SystematicsTool::isAffectedBySystematic(var);}
     SystematicSet affectingSystematics() const {return SystematicsTool::affectingSystematics();}
