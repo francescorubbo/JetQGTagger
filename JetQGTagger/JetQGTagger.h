@@ -15,7 +15,7 @@ namespace InDet { class IInDetTrackTruthOriginTool; }
 
 namespace CP {
 
-  enum SystApplied {
+  enum QGSystApplied {
     NONE,
     QG_TRACKEFFICIENCY,
     QG_TRACKFAKES,
@@ -49,7 +49,7 @@ namespace CP {
     StatusCode getNTrack(const xAOD::Jet * jet, const xAOD::Vertex * pv, int &ntracks);
     StatusCode getNTrackWeight(const xAOD::Jet * jet, double &weight);
 
-    SystApplied m_appliedSystEnum;
+    QGSystApplied m_appliedSystEnum;
     
     TH2D* m_hquark;
     TH2D* m_hgluon;
