@@ -260,7 +260,7 @@ namespace CP {
       int ntrkbin = m_hgluon->GetYaxis()->FindBin(tntrk);
       weight = m_hgluon->GetBinContent(ptbin,ntrkbin);
     }//gluon
-    else if ( pdgid<6 ){
+    else if ( pdgid<5 ){
       int ptbin = m_hquark->GetXaxis()->FindBin(tjetpt);
       int ntrkbin = m_hquark->GetYaxis()->FindBin(tntrk);
       weight = m_hquark->GetBinContent(ptbin,ntrkbin);
