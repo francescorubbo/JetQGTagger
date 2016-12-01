@@ -19,6 +19,7 @@ namespace CP {
     QG_NONE,
     QG_TRACKEFFICIENCY,
     QG_TRACKFAKES,
+    QG_NCHARGEDVBF,
     QG_NCHARGEDEXP_UP,
     QG_NCHARGEDME_UP,
     QG_NCHARGEDPDF_UP,
@@ -54,6 +55,8 @@ namespace CP {
     TH2D* m_hquark;
     TH2D* m_hgluon;
 
+    TH2D* m_vbf_hquark;
+
     TH2D* m_exp_hquark_up;
     TH2D* m_exp_hquark_down;
     TH2D* m_exp_hgluon_up;
@@ -72,6 +75,7 @@ namespace CP {
     StatusCode loadHist(TH2D *&hist,std::string filename,std::string histname);
 
     std::string m_taggername;
+    std::string m_vbffile;
     std::string m_expfile;
     std::string m_mefile;
     std::string m_pdffile;

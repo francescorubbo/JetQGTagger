@@ -11,6 +11,7 @@ namespace CP {
   namespace QGntrackSyst {
     const static SystematicVariation trackefficiency("JET_QG_trackEfficiency");
     const static SystematicVariation trackfakes("JET_QG_trackFakes");
+    const static SystematicVariation nchargedvbf("JET_QG_nchargedVBF");
     const static SystematicVariation nchargedexp_up("JET_QG_nchargedExp_up");
     const static SystematicVariation nchargedme_up("JET_QG_nchargedME_up");
     const static SystematicVariation nchargedpdf_up("JET_QG_nchargedPDF_up");

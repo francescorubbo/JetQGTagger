@@ -16,6 +16,7 @@ namespace CP {
 						      m_appliedSystEnum(QG_NONE),
 						      m_hquark(nullptr),
 						      m_hgluon(nullptr),
+						      m_vbf_hquark(nullptr),
 						      m_exp_hquark_up(nullptr),
 						      m_exp_hquark_down(nullptr),
 						      m_exp_hgluon_up(nullptr),
@@ -35,6 +36,7 @@ namespace CP {
 						      m_originTool(name+"_origintool",this)
   {
     declareProperty( "Tagger", m_taggername = "ntrack");
+    declareProperty( "VBFWeightFile", m_vbffile = "JetQGTagger/qgsyst_vbf.root");
     declareProperty( "ExpWeightFile", m_expfile = "JetQGTagger/qgsyst_exp.root");
     declareProperty( "MEWeightFile", m_mefile = "JetQGTagger/qgsyst_me.root");
     declareProperty( "PDFWeightFile", m_pdffile = "JetQGTagger/qgsyst_pdf.root");
@@ -90,6 +92,7 @@ namespace CP {
 
     if (!addAffectingSystematic(QGntrackSyst::trackfakes,true) || 
 	!addAffectingSystematic(QGntrackSyst::trackefficiency,true) ||
+	!addAffectingSystematic(QGntrackSyst::nchargedvbf,false /*only for VBF analyses */) ||
 	!addAffectingSystematic(QGntrackSyst::nchargedexp_up,true) ||
 	!addAffectingSystematic(QGntrackSyst::nchargedme_up,true) ||
 	!addAffectingSystematic(QGntrackSyst::nchargedpdf_up,true) ||
@@ -101,6 +104,7 @@ namespace CP {
       return StatusCode::FAILURE;
     }
     
+    this->loadHist(m_vbf_hquark,  m_vbffile,"h2dquark");
     this->loadHist(m_exp_hquark_up,  m_expfile,"h2dquark_up");
     this->loadHist(m_exp_hquark_down,m_expfile,"h2dquark_down");
     this->loadHist(m_exp_hgluon_up,  m_expfile,"h2dgluon_up");
@@ -119,6 +123,7 @@ namespace CP {
 
   StatusCode JetQGTagger::finalize(){
     
+    delete m_vbf_hquark; 
     delete m_exp_hquark_up; 
     delete m_exp_hquark_down;
     delete m_exp_hgluon_up;
@@ -205,7 +210,8 @@ namespace CP {
   StatusCode JetQGTagger::getNTrackWeight(const xAOD::Jet * jet, double &weight){
     weight = 1.0;
 
-    if ( m_appliedSystEnum!=QG_NCHARGEDEXP_UP && m_appliedSystEnum!=QG_NCHARGEDME_UP && m_appliedSystEnum!=QG_NCHARGEDPDF_UP &&
+    if ( m_appliedSystEnum!=QG_NCHARGEDVBF && 
+	 m_appliedSystEnum!=QG_NCHARGEDEXP_UP && m_appliedSystEnum!=QG_NCHARGEDME_UP && m_appliedSystEnum!=QG_NCHARGEDPDF_UP &&
 	 m_appliedSystEnum!=QG_NCHARGEDEXP_DOWN && m_appliedSystEnum!=QG_NCHARGEDME_DOWN && m_appliedSystEnum!=QG_NCHARGEDPDF_DOWN )
       return StatusCode::SUCCESS;
 
@@ -249,7 +255,7 @@ namespace CP {
       if( pt>500 ) tntrk++;
     }
 
-    if ( pdgid==21 ){
+    if ( pdgid==21 && m_appliedSystEnum!=QG_NCHARGEDVBF){
       int ptbin = m_hgluon->GetXaxis()->FindBin(tjetpt);
       int ntrkbin = m_hgluon->GetYaxis()->FindBin(tntrk);
       weight = m_hgluon->GetBinContent(ptbin,ntrkbin);
@@ -279,6 +285,8 @@ namespace CP {
     if (systVar == SystematicVariation("")) m_appliedSystEnum = QG_NONE;
     else if (systVar == QGntrackSyst::trackefficiency) m_appliedSystEnum = QG_TRACKEFFICIENCY;
     else if (systVar == QGntrackSyst::trackfakes) m_appliedSystEnum = QG_TRACKFAKES;
+    else if (systVar == QGntrackSyst::nchargedvbf){ 
+      m_appliedSystEnum = QG_NCHARGEDVBF; m_hquark=m_vbf_hquark;}
     else if (systVar == QGntrackSyst::nchargedexp_up){ 
       m_appliedSystEnum = QG_NCHARGEDEXP_UP; m_hquark=m_exp_hquark_up; m_hgluon=m_exp_hgluon_up;}
     else if (systVar == QGntrackSyst::nchargedme_up){ 
